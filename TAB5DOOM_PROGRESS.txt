@@ -1,0 +1,135 @@
+E1M1 VISÍVEL; STACK PROTECTION FAULT — 2026-10-05
+----------------------------------------------
+Usuário confirmou E1M1 visível seguido de azul. Serial confirmou crash em main,
+PC 0x400cc5e2 (wallscan_np2, r_segs.cpp:1319), pilha 32 KiB ultrapassada.
+Renderer reservava três vetores short[MAXWIDTH], MAXWIDTH=5760 (34560 bytes).
+Limites ESP ajustados a 320x200, única resolução oferecida pelo backend.
+Desktop mantém 5760x3600. Maior frame r_segs.cpp agora 2016 bytes (.su do GCC).
+Build, registros e auditoria do renderer passaram. Pacote atualizado.
+Relatório STACK_AUDIT.json registra frames individuais, sem alegar limite da
+cadeia inteira. Screenshot/ZIP antigo ainda têm frames >32 KiB, fora deste teste.
+Nova tentativa física necessária. Tela azul coincidiu com crash/reinício;
+não é evidência de falha na inicialização do driver de display.
+
+E1M1 E PRIMEIRO FRAME; ALOCAÇÃO ZERO — 2026-10-05
+-----------------------------------------------
+Serial confirmou e1m1 - Landing Zone e First engine frame.
+RAM nesse frame: interna 44847 bytes, PSRAM 27334676 bytes.
+Depois invalid ACS module (BEHAVIOR vazio, 16 bytes no WAD oficial; upstream
+ignora módulos abaixo de 32 bytes) e parada Could not malloc 0 bytes.
+M_Malloc/M_Realloc ESP agora normalizam tamanho zero para um byte.
+Regressão das funções reais com alocador NULL-on-zero passou com ASan/UBSan;
+contabilidade GC verificada. Build e auditoria ELF passaram. Pacote atualizado.
+Falta repetir teste no aparelho; WAD/PK3 iguais. Serial permanece em captura.
+
+SEGUNDA SERIAL: BOTS.CFG OPCIONAL — 2026-10-05
+---------------------------------------------
+Correção StartScreen confirmada: carga avançou por atores, renderer, menus e
+estado de jogo, até Resolution: 320 x 200. Parou antes do primeiro frame:
+Couldn't read file /sdcard/doom/bots.cfg.
+M_GetCajunPath retornava caminho mesmo ausente. Contrato upstream retorna
+string vazia para arquivo opcional ausente; LoadBots já trata esse caso.
+Backend corrigido com stat/S_ISREG. Novo build e pacote atualizados.
+Não é necessário criar bots.cfg para single player. Falta novo teste físico.
+
+PRIMEIRA SERIAL E CORREÇÃO STARTSCREEN — 2026-10-05
+--------------------------------------------------
+Serial confirmou SD e leitura de zdoom.pk3 (584 lumps) e chex3.wad (2240 lumps).
+RAM antes do engine: interna 449547 bytes, PSRAM 30491576 bytes.
+Load access fault em 0x4002c212: CheckCmdLine, d_main.cpp:2206.
+Causa: CreateInstance retornava nullptr; autostart chama AppendStatusLine.
+Corrigido para criar FStartupScreen do upstream. Novo build e pacote gerados.
+Correção ainda exige repetir teste no aparelho; sem flash pelo agente.
+Log .debug_logs/chex3-20261005-062450.log.
+
+LINK COMPLETO E PRIMEIRA TENTATIVA PREPARADA — 2026-10-05
+------------------------------------------------------
+ZDoom 2.8.1 ligado com 269 unidades do core e 59 unidades de bibliotecas.
+SD/FAT, tempo, sistema/arquivos, software framebuffer 320x200 e ponte MIPI/PPA,
+teclado Tab5/USB e renderer de som nulo integrados ao projeto experimental.
+Inicialização preparada para chex3.wad original v1.4, mapa E1M1, sem áudio.
+BSS core em PSRAM (~937 KiB); staging RGB565 também em PSRAM.
+WHOLE_ARCHIVE e KEEP/SORT preservam registros; auditoria ELF passou:
+623 ações, 292 classes, 196 propriedades, 36 variáveis, 45 opções MAPINFO.
+Diretórios testados com ASan/UBSan; demais regressões passaram.
+Binário ~2,95 MB. Pacote local build/chex3-bringup com app e microSD/doom.
+Tamanhos/hashes exatos: MANIFEST.json. Reprodução: research/idf/README.md.
+Nenhum flash; gameplay, FPS e pico de RAM ainda NÃO validados no aparelho.
+Próximo marco: primeira inicialização e serial; depois áudio e menu 1/2/3.
+Aplicação principal e projetos originais preservados.
+
+COMPRESSÃO E RELÓGIO EXPERIMENTAL — 2026-10-05
+---------------------------------------------
+zlib, bzip2 e LZMA/7z: 36 unidades C integradas ao projeto research/idf.
+Regressão nativa passou: bytes descomprimidos, CRC32 e cabeçalho corrompido.
+Backend de tempo: esp_timer/FreeRTOS, 35 tics/s, pausa e retomada.
+Regressão do relógio passou, incluindo pausa no tic zero e 24 horas.
+Build ESP-IDF 5.4.4/P4 passou; programa mínimo 256944 bytes.
+Não executado no aparelho; sem flash, SD, display ou inicialização do jogo.
+Tamanho não representa engine completo. Bibliotecas JPEG/gdtoa, demais
+contratos de sistema/arquivos, framebuffer e link completo ainda pendentes.
+Logs e reprodução: research/idf/README.md. Aplicação base preservada.
+
+BUILD EXPERIMENTAL ESP-IDF — 2026-10-05
+-------------------------------------
+Projeto separado research/idf. Build ESP-IDF 5.4.4/P4 passou, compilando 268
+unidades selecionadas para libzdoom_core.a e ligando um programa mínimo.
+Binário experimental 214368 bytes; não inicia jogo e não representa tamanho
+do engine completo (unidades não referenciadas são descartadas pelo linker).
+Nenhum flash realizado. Camada hardware/aplicação principal preservada.
+Lemon/re2c nativos compilados; headers de parsers e zdoom.pk3 gerados.
+PK3: 584 arquivos / 634800 bytes, hash reproduzido em duas gerações.
+Compatibilidade FAT sem chdir/fts, tipos RV32, char com sinal e C++11.
+Correções adicionais e testes descritos em research/idf/README.md.
+Inspetor (5 casos), caminhos e regressões de condições/flags passaram.
+Inventário da biblioteca: 274 símbolos externos, 49 nomeados I_*; ainda precisa
+de bibliotecas e backend ESP-IDF para ligar e iniciar o engine completo.
+Log: research/idf-build.log. Inventário: research/ARCHIVE_AUDIT.json.
+Próximo marco: contratos de sistema/tempo/arquivos, compressão e framebuffer,
+seguido de carga Chex 3 e medição RAM; depois áudio e menu definitivo.
+
+AVALIAÇÃO ZDOOM E PRIMEIRO PROTÓTIPO DE COMPILAÇÃO — 2026-10-05
+-------------------------------------------------------------
+ZDoom 2.8.1 selecionado como candidato experimental para Chex 3 original.
+Código clonado em research/zdoom-2.8.1, commit registrado em SOURCES.json.
+Chex 1 e Chex 3 v1.4 baixados pelo site oficial; ambos têm cabeçalho PWAD.
+Chex 3 tem 15 mapas com BEHAVIOR e scripts DECORATE/MAPINFO/SNDINFO/ANIMDEFS.
+Novo tools/inspect_chex_wad.py valida limites e identifica recursos estendidos;
+cinco testes passaram. Dados em research/WAD_AUDIT.json.
+Probe RV32 compilou matemática, SFMT, leitor WAD e r_draw; pequenos ajustes
+Newlib/tipos preservados em research/probe/zdoom-rv32-types.patch.
+r_draw tem 146528 bytes BSS. Orçamento completo RAM/flash ainda desconhecido.
+Nenhum executável ligado, firmware gerado ou flash realizado nessa avaliação.
+Aplicação principal continua com a base funcional Freedoom.
+Próximo marco: backend ESP-IDF experimental, recursos PK3, framebuffer e medição
+de memória antes do menu definitivo. Relatório: research/ANALISE_CHEX.md.
+
+TAB5CHEX — CÓPIA DE TRABALHO — 2026-10-05
+---------------------------------------
+Pasta criada a partir de Tab5Freedoom validado, sem build, logs e downloads.
+Identidade CMake alterada para Tab5CHEX. Engine e menu Freedoom preservados
+como base funcional; ainda não há launcher de três jogos Chex.
+Mantidas correções FAT para nomes longos, saves e iluminação no reinício.
+Usuário escolheu Chex Quest 3 original, que requer engine com recursos ZDoom;
+não usar adaptação vanilla como substituto.
+Base identifica Chex 1, mas DEHACKED está desativado e precisa ser integrado.
+Distribuição e dependências de Chex 2 ainda precisam ser verificadas.
+README próprio registra escopo, compatibilidade e sequência de implementação.
+Histórico anterior: TAB5FREEDOOM_BASE_HISTORY.txt / README_FREEDOOM_BASE.md.
+Projetos de origem preservados. Nenhuma compilação/instalação CHEX nesta etapa.
+
+2026-10-05 — Chex 3 E1M1 confirmado pelo usuário após correção MAXWIDTH/stack.
+Áudio experimental implementado: ES8388/I2S, 16 vozes SFX, 22050 Hz estéreo.
+Música desativada; escuta e desempenho com áudio pendentes no aparelho.
+Teste PCM/WAV usa os 84 sons originais e ASan/UBSan.
+
+2026-10-05 — Usuário confirmou Chex 3 com som funcionando.
+Seletor 3 jogos integrado no projeto experimental; build passou.
+Chex 1: -iwad chex.wad; Chex 2: mesma base + -file chex2.wad; Chex 3: chex3.wad.
+Config/saves separados; saída reinicia para o seletor.
+Pacote inclui chex.wad e chex3.wad; chex2.wad original pendente de obtenção/auditoria.
+Seleção/retorno e execução Chex 1/2 precisam de teste físico.
+
+2026-10-05 — Saída pelo menu corrigida: ST_Endoom estava vazia no backend ESP.
+Agora chama I_Quit, fecha subsistemas e reinicia para o seletor.
+Logs adicionados antes/depois do fechamento; teste físico da saída pendente.
